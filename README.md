@@ -116,6 +116,14 @@ The main user configuration file located in the project root:
 - **searchResultLimit** (number, optional): Maximum number of results per search
   - Default: `3`
 
+- **keywordBoost** (boolean, optional): Enable keyword-based score boosting to improve relevance with local embedding models
+  - Boosts scores when query keywords appear in document content or file paths
+  - Default: `true`
+  
+- **keywordBoostWeight** (number, optional): Controls the strength of keyword boosting (0.0 to 1.0)
+  - Higher values increase the boost effect
+  - Default: `0.2` (20% boost weight)
+
 **Note**: Collection management is handled automatically by the system. The active collection (docs_v1 or docs_v2) is managed internally using a dual-collection approach for safe updates. This state is stored in `.local-lense-state.json` and should not be modified manually.
 
 ### Docker Compose

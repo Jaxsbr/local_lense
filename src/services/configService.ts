@@ -10,6 +10,8 @@ import { homedir } from "os";
 export interface StaticConfig {
     sourcePath: string;
     searchResultLimit: number;
+    keywordBoost?: boolean;
+    keywordBoostWeight?: number;
 }
 
 /**
@@ -19,7 +21,9 @@ export interface Config extends StaticConfig { }
 
 const DEFAULT_CONFIG: StaticConfig = {
     sourcePath: "~/Documents/my-docs",
-    searchResultLimit: 3
+    searchResultLimit: 3,
+    keywordBoost: true,
+    keywordBoostWeight: 0.2
 };
 
 export class ConfigService {

@@ -46,6 +46,8 @@ const ragSearch = new RAGSearch(
     collectionState,
     {
         resultLimit: staticConfig.searchResultLimit,
+        keywordBoost: staticConfig.keywordBoost ?? true,
+        keywordBoostWeight: staticConfig.keywordBoostWeight ?? 0.2,
     }
 );
 const searchQuery = "guidance on my professional development plan";

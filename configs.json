@@ -1,4 +1,6 @@
 {
-  "sourcePath": "~/Documents/my-docs",
-  "searchResultLimit": 5
+  "sourcePath": "~/Code/_context-vault",
+  "searchResultLimit": 5,
+  "keywordBoost": true,
+  "keywordBoostWeight": 1.0
 }
