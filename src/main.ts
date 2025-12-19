@@ -1,5 +1,6 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { ConfigService } from "./services/configService";
+import { StateService } from "./services/stateService";
 import { CollectionStateService } from "./services/collectionStateService";
 import { EmbedService } from "./services/embedService";
 import { FileSourceProcessor } from "./ragIndexer/implementations/fileSourceProcessor";
@@ -11,8 +12,10 @@ import { QdrantVectorCollectionService } from "./ragSearch/implementations/qdran
 import { QdrantVectorStorageService } from "./ragSearch/implementations/qdrantVectorStorageService";
 
 const configService = new ConfigService();
+const stateService = new StateService();
 const staticConfig = await configService.getStaticConfig();
-const collectionState = new CollectionStateService(staticConfig.currentCollection, configService);
+const initialCollection = await stateService.getCurrentCollection();
+const collectionState = new CollectionStateService(initialCollection, stateService);
 const qdrantClient = new QdrantClient({ host: "localhost", port: 6333 });
 const embedder = new EmbedService();
 const searchService = new QdrantVectorSearchService(qdrantClient);
@@ -33,7 +36,7 @@ await ragIndexer.init();
 
 
 // Run 'refresh' to update stale RAG, e.g. when source documents have changed
-//await ragIndexer.refresh();
+// await ragIndexer.refresh();
 
 
 // Search collection
@@ -55,7 +58,7 @@ console.log("QUERY: ", searchQuery);
 results.forEach((result: SearchResult) => {
     console.log("SCORE: ", result.score)
     console.log("SOURCE: ", result?.payload?.sourceLocation)
-    console.log("CONTENT: ", result?.payload?.content);
+    // console.log("CONTENT: ", result?.payload?.content);
 });
 
 // MCP Tool Registration (Future implementation)

@@ -5,11 +5,11 @@ import { homedir } from "os";
 /**
  * Static configuration that doesn't change at runtime.
  * Loaded once and cached for the lifetime of the application.
+ * User-configurable settings only.
  */
 export interface StaticConfig {
     sourcePath: string;
     searchResultLimit: number;
-    currentCollection: string; // Initial collection, used to bootstrap CollectionStateService
 }
 
 /**
@@ -19,8 +19,7 @@ export interface Config extends StaticConfig { }
 
 const DEFAULT_CONFIG: StaticConfig = {
     sourcePath: "~/Documents/my-docs",
-    searchResultLimit: 3,
-    currentCollection: "docs_v1"
+    searchResultLimit: 3
 };
 
 export class ConfigService {
@@ -47,8 +46,8 @@ export class ConfigService {
             const config = JSON.parse(fileContent) as Config;
 
             // Validate required fields
-            if (!config.sourcePath || !config.currentCollection) {
-                throw new Error("Config file is missing required fields: sourcePath and currentCollection are required");
+            if (!config.sourcePath) {
+                throw new Error("Config file is missing required field: sourcePath");
             }
 
             this.cachedConfig = config;
@@ -92,22 +91,9 @@ export class ConfigService {
         return config.searchResultLimit;
     }
 
-    public async getCurrentCollection(): Promise<string> {
-        const config = await this.readConfig();
-        return config.currentCollection;
-    }
-
-    public async updateCurrentCollection(collection: string): Promise<void> {
-        const config = await this.readConfig();
-        config.currentCollection = collection;
-        await this.writeConfig(config);
-    }
-
     /**
      * Get the static config object once.
      * Prefer this over individual getters to avoid repeated async calls.
-     * Note: currentCollection in this config is only the initial value.
-     * For the current active collection, use CollectionStateService.
      */
     public async getStaticConfig(): Promise<StaticConfig> {
         const config = await this.readConfig();

@@ -12,6 +12,8 @@ const DOCS_V2 = "docs_v2";
 const VECTOR_SIZE = 384;
 const VECTOR_DISTANCE = "Cosine";
 const BATCH_SIZE = 250;
+const MAX_RETRIES = 10;
+const RETRY_DELAY_MS = 1000;
 
 interface VerificationResult {
     requiresPopulation: boolean;
@@ -58,13 +60,6 @@ export class RAGIndexer {
     }
 
     public async init(): Promise<void> {
-        if (!this._staticConfig) {
-            throw new Error("Config not provided to constructor");
-        }
-        // Initialize collection state from config
-        const initialCollection = this._staticConfig.currentCollection;
-        this._collectionState.updateCurrentCollection(initialCollection);
-
         const currentCollection = this._collectionState.getCurrentCollection();
         console.log(`Initializing with collection: ${currentCollection}`);
         const { requiresPopulation } = await this.verifyCollection(currentCollection);
@@ -107,7 +102,7 @@ export class RAGIndexer {
 
         // Update the collection state (single source of truth)
         // This automatically updates all components that depend on it
-        // AND persists to config.json so it survives restarts
+        // AND persists to .local-lense-state.json so it survives restarts
         await this._collectionState.updateCurrentCollection(nextCollection);
 
         // Delete previous collection version
@@ -144,20 +139,46 @@ export class RAGIndexer {
         return chunks;
     }
 
+    private async upsertWithRetry(
+        collectionName: string,
+        batch: Array<CustomPoint>,
+        batchIndex: number,
+        totalBatches: number,
+        totalPoints: number
+    ): Promise<void> {
+        let retries = 0;
+        while (retries < MAX_RETRIES) {
+            try {
+                await this._storageService.upsert(collectionName, batch);
+                const startIdx = batchIndex * BATCH_SIZE;
+                const endIdx = Math.min((batchIndex + 1) * BATCH_SIZE, totalPoints) - 1;
+                console.log(`Batch upload ${batchIndex + 1}/${totalBatches}: ${startIdx} - ${endIdx}`);
+                return; // Success, exit retry loop
+            } catch (error) {
+                retries++;
+                const errorMessage = error instanceof Error ? error.message : String(error);
+
+                if (retries < MAX_RETRIES) {
+                    console.log(`Batch ${batchIndex + 1} failed (attempt ${retries}/${MAX_RETRIES}), retrying in ${RETRY_DELAY_MS}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    continue;
+                }
+
+                throw new Error(
+                    `Failed to upload batch ${batchIndex + 1}/${totalBatches} after ${retries} attempts: ${errorMessage}`
+                );
+            }
+        }
+    }
+
     private async populate(collectionName: string): Promise<void> {
         console.log(`Starting population of collection: ${collectionName}`);
         const sourceItems = this._fileProcessor.process();
-        console.log(`Processed ${sourceItems.length} source items`);
         const points = await this.generatePoints(sourceItems);
-        console.log(`Generated ${points.length} points with embeddings`);
         const batches = this.chunk(points, BATCH_SIZE);
-        console.log(`Split into ${batches.length} batches`);
 
         for (let i = 0; i < batches.length; i++) {
-            console.log(
-                `Batch upload ${i + 1}/${batches.length}: ${i * BATCH_SIZE} - ${Math.min((i + 1) * BATCH_SIZE, points.length) - 1}`
-            );
-            await this._storageService.upsert(collectionName, batches[i]);
+            await this.upsertWithRetry(collectionName, batches[i], i, batches.length, points.length);
         }
         console.log(`Population complete for collection: ${collectionName}`);
     }

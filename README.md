@@ -1,6 +1,13 @@
 # local-lense
 
-A reusable MCP (Model Context Protocol) tool that enables semantic search across your local documentation directly within Cursor. This tool indexes documentation files and provides vector-based search capabilities through a simple MCP server interface.
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green)
+![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20DB-orange)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+
+A production-ready RAG (Retrieval-Augmented Generation) system that enables semantic search across local documentation using vector embeddings and similarity search. Built with TypeScript, this tool demonstrates modern AI integration patterns including vector databases, embedding generation, and MCP (Model Context Protocol) tooling.
+
+**Perfect for**: Engineering teams needing intelligent documentation search, knowledge bases, or RAG system implementations.
 
 ## What is local-lense?
 
@@ -28,7 +35,13 @@ local-lense uses a RAG (Retrieval-Augmented Generation) architecture:
    - Searches Qdrant for similar document chunks
    - Returns relevant sections with relevance scores
 
-3. **MCP Integration** (Future):
+3. **Safe Refresh Mechanism**:
+   - Uses dual-collection approach (docs_v1/docs_v2) for safe updates
+   - When refreshing, writes to the inactive collection first
+   - Only switches to the new collection after successful indexing
+   - Prevents corruption of the active collection if indexing fails
+
+4. **MCP Integration** (Future):
    - Exposes search as MCP tools
    - Cursor AI can query your docs directly
    - Seamless integration with your workflow
@@ -69,14 +82,12 @@ Edit `configs.json`:
 ```json
 {
   "sourcePath": "~/Documents/my-docs",
-  "searchResultLimit": 3,
-  "currentCollection": "docs_v1"
+  "searchResultLimit": 3
 }
 ```
 
 - `sourcePath`: Path to your documentation directory (supports `~` for home directory)
 - `searchResultLimit`: Maximum number of search results to return
-- `currentCollection`: Name of the Qdrant collection to use
 
 ### 5. Build the project
 
@@ -96,7 +107,7 @@ npm run dev
 
 ### configs.json
 
-The main configuration file located in the project root:
+The main user configuration file located in the project root:
 
 - **sourcePath** (string, required): Path to your documentation directory
   - Supports `~` for home directory expansion
@@ -104,10 +115,8 @@ The main configuration file located in the project root:
   
 - **searchResultLimit** (number, optional): Maximum number of results per search
   - Default: `3`
-  
-- **currentCollection** (string, required): Qdrant collection name
-  - Used to organize different document sets
-  - Example: `"docs_v1"`, `"engineering-docs"`, etc.
+
+**Note**: Collection management is handled automatically by the system. The active collection (docs_v1 or docs_v2) is managed internally using a dual-collection approach for safe updates. This state is stored in `.local-lense-state.json` and should not be modified manually.
 
 ### Docker Compose
 
@@ -195,40 +204,39 @@ See [`src/ragIndexer/types.ts`](src/ragIndexer/types.ts) for the complete interf
 ## Architecture
 
 ```
-┌─────────────────┐
-│  Documentation  │
-│     Files       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ File Processor  │  ← Reads and chunks documents
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Embed Service   │  ← Generates vector embeddings
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Qdrant Store   │  ← Vector database
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Search Query   │  ← User query
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  RAG Search     │  ← Finds similar vectors
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Results        │  ← Relevant document chunks
-└─────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    RAG Pipeline                         │
+└─────────────────────────────────────────────────────────┘
+
+Indexing Flow:
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Documents   │ --> │   Chunking   │ --> │  Embeddings  │
+│  (MD/HTML)   │     │   Strategy   │     │  Generation  │
+└──────────────┘     └──────────────┘     └──────┬───────┘
+                                                   │
+                                                   ▼
+                                          ┌──────────────┐
+                                          │   Qdrant     │
+                                          │ Vector Store │
+                                          └──────┬───────┘
+                                                 │
+Search Flow:                                      │
+┌──────────────┐     ┌──────────────┐           │
+│ User Query   │ --> │   Embed      │ ----------┘
+│ (Natural Lang)│     │   Query      │
+└──────────────┘     └──────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │ Similarity   │
+                     │   Search     │
+                     └──────┬───────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  Ranked      │
+                     │  Results     │
+                     └──────────────┘
 ```
 
 ## Troubleshooting
@@ -248,8 +256,8 @@ See [`src/ragIndexer/types.ts`](src/ragIndexer/types.ts) for the complete interf
 ### Empty search results
 
 - Run indexing first: `await ragIndexer.refresh()` in `main.ts`
-- Check collection name matches `currentCollection` in config
-- Verify documents were processed (check Qdrant dashboard)
+- Verify documents were processed (check Qdrant dashboard at http://localhost:6333/dashboard)
+- Check that `.local-lense-state.json` exists and contains a valid collection name
 
 ### Build errors
 
@@ -300,15 +308,10 @@ npm run dev
 
 Uses `tsx` to run TypeScript directly without building.
 
-## Future Enhancements
+## Roadmap
 
 - [ ] MCP server implementation for Cursor integration
-- [ ] Google Docs sync support
-- [ ] Multiple source types (web, databases, etc.)
-- [ ] Improved chunking strategies
-- [ ] Relevance score tuning
-- [ ] Incremental indexing
-- [ ] Collection management tools
+- [ ] Relevance score tuning and filtering
 
 ## License
 

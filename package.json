@@ -8,7 +8,18 @@
         "build": "tsc",
         "dev": "tsx src/main.ts"
     },
-    "keywords": [],
+    "keywords": [
+        "rag",
+        "retrieval-augmented-generation",
+        "vector-database",
+        "semantic-search",
+        "embeddings",
+        "qdrant",
+        "mcp",
+        "model-context-protocol",
+        "typescript",
+        "documentation-search"
+    ],
     "author": "",
     "license": "ISC",
     "dependencies": {
