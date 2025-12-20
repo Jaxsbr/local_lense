@@ -9,7 +9,6 @@ import {
 
 const DOCS_V1 = "docs_v1";
 const DOCS_V2 = "docs_v2";
-const VECTOR_SIZE = 384;
 const VECTOR_DISTANCE = "Cosine";
 const BATCH_SIZE = 250;
 const MAX_RETRIES = 10;
@@ -75,8 +74,11 @@ export class RAGIndexer {
         const exists = await this._collectionService.collectionExists(collectionName);
 
         if (!exists) {
+            if (!this._staticConfig) {
+                throw new Error("StaticConfig is required to create collection");
+            }
             await this._collectionService.createCollection(collectionName, {
-                vectorSize: VECTOR_SIZE,
+                vectorSize: this._staticConfig.vectorSize,
                 distance: VECTOR_DISTANCE,
             });
             return { requiresPopulation: true };

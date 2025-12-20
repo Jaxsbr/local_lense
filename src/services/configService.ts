@@ -12,6 +12,8 @@ export interface StaticConfig {
     searchResultLimit: number;
     keywordBoost?: boolean;
     keywordBoostWeight?: number;
+    embeddingModel: string;
+    vectorSize: number;
 }
 
 /**
@@ -23,7 +25,9 @@ const DEFAULT_CONFIG: StaticConfig = {
     sourcePath: "~/Documents/my-docs",
     searchResultLimit: 3,
     keywordBoost: true,
-    keywordBoostWeight: 0.2
+    keywordBoostWeight: 0.2,
+    embeddingModel: "Xenova/all-MiniLM-L6-v2",
+    vectorSize: 384
 };
 
 export class ConfigService {

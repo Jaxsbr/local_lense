@@ -1,4 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
+import path from "path";
 import { ConfigService } from "./services/configService";
 import { StateService } from "./services/stateService";
 import { CollectionStateService } from "./services/collectionStateService";
@@ -17,7 +18,7 @@ const staticConfig = await configService.getStaticConfig();
 const initialCollection = await stateService.getCurrentCollection();
 const collectionState = new CollectionStateService(initialCollection, stateService);
 const qdrantClient = new QdrantClient({ host: "localhost", port: 6333 });
-const embedder = new EmbedService();
+const embedder = new EmbedService(staticConfig.embeddingModel);
 const searchService = new QdrantVectorSearchService(qdrantClient);
 const collectionService = new QdrantVectorCollectionService(qdrantClient);
 const storageService = new QdrantVectorStorageService(qdrantClient);
@@ -36,7 +37,7 @@ await ragIndexer.init();
 
 
 // Run 'refresh' to update stale RAG, e.g. when source documents have changed
-// await ragIndexer.refresh();
+await ragIndexer.refresh();
 
 
 // Search collection
@@ -58,9 +59,25 @@ const results = await ragSearch.search(searchQuery);
 console.log("================================");
 console.log("QUERY: ", searchQuery);
 results.forEach((result: SearchResult) => {
-    console.log("SCORE: ", result.score)
-    console.log("SOURCE: ", result?.payload?.sourceLocation)
-    // console.log("CONTENT: ", result?.payload?.content);
+
+    const isBenchMark = true;
+    if (isBenchMark) {
+        // Reduced and formatted for benchmark report
+        const sourceLocation = result?.payload?.sourceLocation;
+        let title = "";
+        if (sourceLocation && typeof sourceLocation === 'string') {
+            const pathParts = sourceLocation.split(path.sep).filter(part => part !== '');
+            // Take up to last 3 parts (2 directories + 1 filename)
+            const relevantParts = pathParts.slice(-3);
+            title = relevantParts.join(path.sep);
+        }
+        console.log("SCORE: ", result.score.toFixed(2), " SOURCE: ", title)
+    } else {
+        // Basic demo output
+        console.log("SCORE: ", result.score.toFixed(2))
+        console.log("SOURCE: ", result?.payload?.sourceLocation)
+        console.log("CONTENT: ", result?.payload?.content);
+    }
 });
 
 // MCP Tool Registration (Future implementation)

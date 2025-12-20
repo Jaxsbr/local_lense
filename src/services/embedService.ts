@@ -3,10 +3,15 @@ import { IVectorEmbedder } from "../types";
 
 export class EmbedService implements IVectorEmbedder {
     embedder: any;
+    private modelName: string;
+
+    constructor(modelName: string) {
+        this.modelName = modelName;
+    }
 
     async loadEmbedder() {
         if (!this.embedder) {
-            this.embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+            this.embedder = await pipeline("feature-extraction", this.modelName);
         }
     }
 
