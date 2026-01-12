@@ -1,5 +1,5 @@
 import { pipeline } from "@xenova/transformers";
-import { IVectorEmbedder } from "../types";
+import { IVectorEmbedder } from "../types.js";
 
 export class EmbedService implements IVectorEmbedder {
     embedder: any;

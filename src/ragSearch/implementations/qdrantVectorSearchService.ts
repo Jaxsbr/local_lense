@@ -1,5 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { IVectorSearchService, SearchResult } from "../types";
+import { IVectorSearchService, SearchResult } from "../types.js";
 
 /**
  * Qdrant implementation of vector search capability.

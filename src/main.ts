@@ -71,8 +71,12 @@ results.forEach((result: SearchResult) => {
     }
 });
 
-// MCP Tool Registration (Future implementation)
+// MCP Tool Registration
+
+// MVP Functionality
+// SearchTool              - Finds documents with relevance to user query
+
+// Full Tool Functionality
 // ReIndexTool             - Re populates the collections with current version of source docs
 // SourceConfigurationTool - Allows the configuration and verification of source paths
 // SearchConfigurationTool - Allows the configuration of search settings, result limit, score threshold
-// SearchTool              - Finds documents with relevance to user query

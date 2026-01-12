@@ -1,4 +1,4 @@
-# local-lense
+# local_lense
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green)
@@ -9,9 +9,9 @@ A production-ready RAG (Retrieval-Augmented Generation) system that enables sema
 
 **Perfect for**: Engineering teams needing intelligent documentation search, knowledge bases, or RAG system implementations.
 
-## What is local-lense?
+## What is local_lense?
 
-local-lense is a RAG (Retrieval-Augmented Generation) powered documentation search tool that:
+local_lense is a RAG (Retrieval-Augmented Generation) powered documentation search tool that:
 
 - **Indexes your local documentation** - Processes markdown, HTML, JSON, YAML, and text files to create a searchable vector index
 - **Semantic search** - Uses vector embeddings to find relevant content based on meaning, not just keywords
@@ -21,7 +21,7 @@ local-lense is a RAG (Retrieval-Augmented Generation) powered documentation sear
 
 ## How it works
 
-local-lense uses a RAG (Retrieval-Augmented Generation) architecture:
+local_lense uses a RAG (Retrieval-Augmented Generation) architecture:
 
 1. **Indexing Phase**: 
    - Scans your configured documentation directory
@@ -56,7 +56,7 @@ local-lense uses a RAG (Retrieval-Augmented Generation) architecture:
 
 ```bash
 git clone <repository-url>
-cd local-lense
+cd local_lense
 ```
 
 ### 2. Install dependencies
@@ -150,7 +150,7 @@ The processor recursively scans directories and automatically detects file types
 
 ## Custom Source Processors
 
-local-lense uses a pluggable source processor architecture. While the default implementation processes local files, you can implement custom source processors to index content from other sources.
+local_lense uses a pluggable source processor architecture. While the default implementation processes local files, you can implement custom source processors to index content from other sources.
 
 ### Implementing a Custom Processor
 
@@ -191,9 +191,9 @@ See [`src/ragIndexer/types.ts`](src/ragIndexer/types.ts) for the complete interf
 ```json
 {
   "mcpServers": {
-    "local-lense": {
+    "local_lense": {
       "command": "node",
-      "args": ["/path/to/local-lense/build/index.js"],
+      "args": ["/path/to/local_lense/build/index.js"],
       "env": {}
     }
   }
@@ -276,7 +276,7 @@ Search Flow:                                      │
 ### Project Structure
 
 ```
-local-lense/
+local_lense/
 ├── src/
 │   ├── main.ts                    # Entry point (test script)
 │   ├── services/                  # Core services

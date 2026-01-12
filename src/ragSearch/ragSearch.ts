@@ -1,5 +1,5 @@
-import { IVectorEmbedder } from "../types";
-import { IVectorSearchService, SearchResult } from "./types";
+import { IVectorEmbedder } from "../types.js";
+import { IVectorSearchService, SearchResult } from "./types.js";
 
 /**
  * Static search configuration (doesn't change at runtime)

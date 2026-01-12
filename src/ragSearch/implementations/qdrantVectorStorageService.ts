@@ -1,5 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { IVectorStorageService } from "../types";
+import { IVectorStorageService } from "../types.js";
 
 /**
  * Qdrant implementation of vector storage capability.

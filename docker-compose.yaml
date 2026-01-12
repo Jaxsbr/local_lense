@@ -3,7 +3,7 @@ version: '3.8'
 services:
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: local-lense-qdrant
+    container_name: local_lense-qdrant
     ports:
       - "6333:6333"
     volumes:

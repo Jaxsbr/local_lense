@@ -1,5 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { IVectorCollectionService } from "../types";
+import { IVectorCollectionService } from "../types.js";
 
 /**
  * Qdrant implementation of collection management capability.
