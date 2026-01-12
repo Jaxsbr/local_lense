@@ -80,7 +80,7 @@ async function handleSearch(query: string): Promise<{ content: Array<{ type: "te
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error)
-        
+
         // Check for common error scenarios
         if (errorMessage.includes("connection") || errorMessage.includes("ECONNREFUSED")) {
             return {

@@ -108,8 +108,9 @@ npm run dev
 The main user configuration file located in the project root:
 
 - **sourcePath** (string, required): Path to your documentation directory
-  - Supports `~` for home directory expansion
-  - Example: `"~/Documents/my-docs"` or `"/absolute/path/to/docs"`
+  - **Important**: Use full absolute paths - avoid using `~` (tilde) for home directory expansion
+  - Example: Use `"/Users/username/Documents/my-docs"` instead of `"~/Documents/my-docs"`
+  - Full paths ensure reliable operation across different contexts and environments
   
 - **searchResultLimit** (number, optional): Maximum number of results per search
   - Default: `3`
@@ -186,19 +187,52 @@ See [`src/ragIndexer/types.ts`](src/ragIndexer/types.ts) for the complete interf
 
 ## Using in Cursor
 
-**Note**: MCP server implementation is planned for a future release. Once implemented, you'll configure it in Cursor settings:
+**Prerequisites**: Before using local_lense in Cursor, ensure Docker is running and Qdrant is started:
+
+```bash
+# In your local_lense directory
+docker-compose up -d
+```
+
+This starts the Qdrant vector database on `localhost:6333`, which the MCP tool requires.
+
+**Configuration**: Add local_lense to your Cursor MCP server settings:
 
 ```json
 {
   "mcpServers": {
     "local_lense": {
       "command": "node",
-      "args": ["/path/to/local_lense/build/index.js"],
+      "args": ["/full/path/to/your/local_lense/build/index.js"],
       "env": {}
     }
   }
 }
 ```
+
+**Important Notes**:
+- Use the full absolute path to `build/index.js` in the `args` field
+- Avoid hyphens in repository/directory names (use underscores instead) due to Cursor MCP configuration parsing issues
+- See "When local_lense Works Best" below for important usage limitations and recommendations
+
+## When local_lense Works Best
+
+### Reliable Usage
+When documentation is indexed from paths **OUTSIDE** Cursor's working directory:
+- Examples: `/Users/name/Documents/my-docs`, `/Users/name/notes`, separate directory from codebase
+- Cursor will use the MCP tool because built-in tools can't access those paths
+
+### Limited Usage
+When documentation is indexed from paths **WITHIN** Cursor's working directory:
+- Cursor may use built-in `grep` instead of the MCP tool
+- This is an acceptable limitation - built-in tools will handle searches in the working directory.
+- Workaround this by specifying more direct queries. e.g. "use 'search' from your registered mcp tools with query: {query}"
+
+### Best Practices
+
+- **Directory Placement**: Index documentation from directories outside your project workspace for most reliable MCP tool usage
+- **Path Configuration**: Always use full absolute paths in `configs.json` (see Configuration section above)
+- **Repository Naming**: Use underscores instead of hyphens in directory names to avoid MCP path parsing issues
 
 ## Example Use Cases
 
@@ -255,9 +289,9 @@ Search Flow:                                      │
 
 ### Path not found errors
 
-- Verify `sourcePath` in `configs.json` exists
-- Use absolute paths or `~` for home directory
+- Verify `sourcePath` in `configs.json` exists (see Configuration section for path requirements)
 - Check file permissions
+- Ensure the path is accessible from the local_lense working directory
 
 ### Empty search results
 
@@ -270,6 +304,19 @@ Search Flow:                                      │
 - Ensure TypeScript is installed: `npm install`
 - Check Node.js version: `node --version` (should be v18+)
 - Clear build cache: `rm -rf build && npm run build`
+
+### MCP tool not being used
+
+- **Symptom**: Cursor uses grep instead of local_lense search tool
+- **Cause**: Documentation path is within Cursor's working directory
+- **Solution**: Move documentation to a separate directory or accept the limitation
+
+### Repository name with hyphens causes path truncation
+
+- **Symptom**: MCP server path gets truncated (e.g., `local-lense` becomes `local`)
+- **Cause**: Cursor's MCP server configuration has issues parsing paths containing hyphens
+- **Solution**: Use underscores instead of hyphens in repository/directory names (e.g., `local_lense` instead of `local-lense`)
+- **Note**: This is a Cursor MCP configuration limitation, not a local_lense issue
 
 ## Development
 

@@ -11,13 +11,12 @@ We need to expose the file path and context for use by consumer
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { SourceType, ContentType, SourceItem, ISourceProcessor } from '../types';
+import { SourceType, ContentType, SourceItem, ISourceProcessor } from '../types.js';
 
 export class FileSourceProcessor implements ISourceProcessor {
     private _sourceRoot: string;
     private _sourceType: SourceType;
     private _sourceItems: SourceItem[] = [];
-    private _hasProcessed = false;
 
     constructor(sourceRoot: string) {
         this._sourceRoot = sourceRoot;
@@ -61,11 +60,8 @@ export class FileSourceProcessor implements ISourceProcessor {
     }
 
     public process(): ReadonlyArray<SourceItem> {
-        if (this._hasProcessed) {
-            throw new Error("process() has already been called. Create a new instance to process again.")
-        }
-
-        this._hasProcessed = true;
+        // Reset state to allow reprocessing
+        this._sourceItems = [];
 
         this.processPath(this._sourceRoot);
         return this._sourceItems;
